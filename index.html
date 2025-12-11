@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEFAZ-PE | Atendimento Inteligente Integrado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <section id="login-screen" class="screen active">
+        <div class="login-card">
+            <div class="logo-circle">PE</div>
+            <h2>Acesso Restrito SEFAZ</h2>
+            <p class="subtitle">Sistema Integrado de Atendimento ao Cidadão</p>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="username" placeholder="Usuário (admin ou agent)">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="Senha (qualquer)">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Entrar no Sistema</button>
+            </form>
+            
+            <div class="simulation-link">
+                <a href="#" id="simulate-citizen-btn">Simular Interface do Cidadão (Mobile)</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="citizen-screen" class="screen">
+        <div class="mobile-frame">
+            <div id="lgpd-modal" class="modal-overlay active">
+                <div class="modal-content bottom-sheet">
+                    <h3><i class="fas fa-shield-alt"></i> Privacidade de Dados</h3>
+                    <p>Em conformidade com a <strong>LGPD</strong>, precisamos do seu consentimento para processar seus dados de atendimento.</p>
+                    <button id="accept-lgpd-btn" class="btn btn-primary btn-block">Aceitar e Continuar</button>
+                </div>
+            </div>
+
+            <div id="survey-modal" class="modal-overlay">
+                <div class="modal-content center-card">
+                    <h4>Avalie seu Atendimento</h4>
+                    <div class="stars-container">
+                        <i class="far fa-star star-rate" data-value="1"></i>
+                        <i class="far fa-star star-rate" data-value="2"></i>
+                        <i class="far fa-star star-rate" data-value="3"></i>
+                        <i class="far fa-star star-rate" data-value="4"></i>
+                        <i class="far fa-star star-rate" data-value="5"></i>
+                    </div>
+                    <textarea placeholder="Deixe um comentário opcional..."></textarea>
+                    <button id="send-survey-btn" class="btn btn-primary btn-block">Enviar Avaliação</button>
+                </div>
+            </div>
+
+            <div class="app-header">
+                <div class="header-left">
+                    <div class="avatar-small">PE</div>
+                    <div class="header-info">
+                        <span class="header-title">SEFAZ-PE Oficial <i class="fas fa-check-circle verified"></i></span>
+                        <span class="header-status">Online agora</span>
+                    </div>
+                </div>
+                <button class="btn-icon"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+
+            <div class="chat-area" id="citizen-chat-feed"></div>
+
+            <div class="quick-replies" id="quick-replies">
+                <button class="chip" data-msg="Consultar IPVA">Consultar IPVA</button>
+                <button class="chip" data-msg="Situação Fiscal">Situação Fiscal</button>
+                <button class="chip" data-msg="Falar com Humano">Falar com Humano</button>
+            </div>
+
+            <div class="input-area">
+                <button class="btn-icon"><i class="fas fa-plus"></i></button>
+                <input type="text" id="citizen-input" placeholder="Mensagem...">
+                <button class="btn-icon send-btn" id="citizen-send"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <section id="internal-system" class="screen">
+        <aside class="sidebar">
+            <div class="sidebar-logo">SEFAZ</div>
+            <nav class="sidebar-menu">
+                <div class="menu-item active" data-tab="agent" title="Atendimento">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="menu-item" data-tab="dashboard" title="Dashboard">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="menu-item" data-tab="kb" title="Base de Conhecimento">
+                    <i class="fas fa-book"></i>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="menu-item" id="logout-btn" title="Sair">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h2 id="page-title">Painel de Atendimento</h2>
+                <div class="user-profile">
+                    <span class="role-badge" id="user-role">Atendente</span>
+                    <span class="user-name" id="user-name">Usuário Logado</span>
+                    <div class="avatar-circle"><i class="fas fa-user"></i></div>
+                </div>
+            </header>
+
+            <div id="tab-agent" class="tab-content active">
+                <div class="agent-layout">
+                    <div class="queue-panel">
+                        <div class="panel-header">
+                            <span>Fila de Espera</span>
+                            <span class="badge" id="queue-count">0</span>
+                        </div>
+                        <div class="queue-list" id="queue-list"></div>
+                    </div>
+
+                    <div class="chat-panel">
+                        <div class="panel-header">
+                            <span>Atendimento em Curso</span>
+                            <div class="timer" id="chat-timer">00:00</div>
+                        </div>
+                        <div class="agent-chat-area" id="agent-chat-feed">
+                            <div class="empty-state">Selecione um atendimento na fila</div>
+                        </div>
+                        <div class="agent-input-area">
+                            <input type="text" id="agent-input" placeholder="Digite sua resposta...">
+                            <button class="btn btn-primary" id="agent-send">Enviar</button>
+                        </div>
+                    </div>
+
+                    <div class="context-panel">
+                        <div class="card info-card">
+                            <h4>Dados do Contribuinte</h4>
+                            <div id="citizen-data">
+                                <p class="text-muted">Nenhum selecionado</p>
+                            </div>
+                        </div>
+                        <div class="card info-card">
+                            <h4>Histórico Bot</h4>
+                            <div class="bot-history" id="bot-history-log"></div>
+                        </div>
+                        <button class="btn btn-danger btn-block mt-auto" id="end-chat-btn" disabled>Encerrar Atendimento</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-dashboard" class="tab-content">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fab fa-whatsapp"></i></div>
+                        <div class="kpi-data">
+                            <h3>1.205</h3>
+                            <p>Vol. WhatsApp</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fas fa-robot"></i></div>
+                        <div class="kpi-data">
+                            <h3>72%</h3>
+                            <p>Retenção IA</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+                        <div class="kpi-data">
+                            <h3>1m 12s</h3>
+                            <p>TMA Humano</p>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon"><i class="fas fa-smile"></i></div>
+                        <div class="kpi-data">
+                            <h3>4.8/5</h3>
+                            <p>CSAT</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <canvas id="chart-volume"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-retention"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-kb" class="tab-content">
+                <div class="kb-toolbar">
+                    <input type="text" class="search-input" placeholder="Buscar artigos...">
+                    <button class="btn btn-primary" id="new-article-btn"><i class="fas fa-plus"></i> Novo Artigo</button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título / Intenção</th>
+                            <th>Categoria</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="kb-table-body"></tbody>
+                </table>
+            </div>
+        </main>
+    </section>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
